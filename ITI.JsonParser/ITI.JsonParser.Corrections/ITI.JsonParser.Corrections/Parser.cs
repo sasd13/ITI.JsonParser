@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,39 +14,57 @@ namespace ITI.JsonParser
         public static object ParseNull(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            Debug.Assert(_current.Equals('n'));
-            if (!ReadNonStringValue(value, ref start, ref count).Equals("null"))
+            if (!_current.Equals('n') || !ReadNonStringValue(value, ref start, ref count).Equals("null"))
             {
                 throw new FormatException();
             }
+
             return null;
         }
 
         public static bool ParseBoolean(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            Debug.Assert(_current.Equals('t') || _current.Equals('f'));
-            return Boolean.Parse(ReadNonStringValue(value, ref start, ref count));
+            bool _result = false;
+            if ((!_current.Equals('t') && !_current.Equals('f')) || !Boolean.TryParse(ReadNonStringValue(value, ref start, ref count), out _result))
+            {
+                throw new FormatException();
+            }
+
+            return _result;
         }
 
         public static double ParseDouble(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            Debug.Assert(_current.Equals('-') || Int32.TryParse(_current.ToString(), out int _result));
-            return Double.Parse(ReadNonStringValue(value, ref start, ref count), NumberStyles.Number, _culture);
+            double _result = 0.0D;
+            if ((!_current.Equals('-') && !Int32.TryParse(_current.ToString(), out int _void)) || !Double.TryParse(ReadNonStringValue(value, ref start, ref count), NumberStyles.Number, _culture, out _result))
+            {
+                throw new FormatException();
+            }
+
+            return _result;
         }
 
         public static string ParseString(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            Debug.Assert(_current.Equals('"'));
+            if (!_current.Equals('"'))
+            {
+                throw new FormatException();
+            }
+
             return Decoder(ReadStringValue(value, ref start, ref count));
         }
 
         public static object[] ParseArray(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            Debug.Assert(_current.Equals('['));
+            if (!_current.Equals('['))
+            {
+                throw new FormatException();
+            }
+
             List<object> _results = new List<object>();
             while (MoveNext(value, ref start, ref count, out _current))
             {
@@ -74,7 +91,11 @@ namespace ITI.JsonParser
         public static Dictionary<string, object> ParseObject(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            Debug.Assert(_current.Equals('{'));
+            if (!_current.Equals('{'))
+            {
+                throw new FormatException();
+            }
+
             Dictionary<string, object> _results = new Dictionary<string, object>();
             while (MoveNext(value, ref start, ref count, out _current))
             {
@@ -135,7 +156,7 @@ namespace ITI.JsonParser
                 case '[': return ParseArray(value, ref start, ref count);
                 case '{': return ParseObject(value, ref start, ref count);
                 default:
-                    if (current.Equals('-') || Int32.TryParse(current.ToString(), out int _result))
+                    if (current.Equals('-') || Int32.TryParse(current.ToString(), out int _void))
                     {
                         return ParseDouble(value, ref start, ref count);
                     }
@@ -148,7 +169,7 @@ namespace ITI.JsonParser
 
         private static bool MoveNext(string value, ref int start, ref int count)
         {
-            return MoveNext(value, ref start, ref count, out char _current);
+            return MoveNext(value, ref start, ref count, out char _void);
         }
 
         private static bool MoveNext(string value, ref int start, ref int count, out char current)
