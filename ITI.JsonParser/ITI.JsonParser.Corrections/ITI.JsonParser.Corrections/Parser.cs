@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace ITI.JsonParser
 {
-
     public static class Parser
     {
         private static CultureInfo _culture = CultureInfo.CreateSpecificCulture("en-US");
@@ -132,9 +129,9 @@ namespace ITI.JsonParser
         {
             switch (current)
             {
-                case '"': return ParseString(value, ref start, ref count);
                 case 'n': return ParseNull(value, ref start, ref count);
                 case 't': case 'f': return ParseBoolean(value, ref start, ref count);
+                case '"': return ParseString(value, ref start, ref count);
                 case '[': return ParseArray(value, ref start, ref count);
                 case '{': return ParseObject(value, ref start, ref count);
                 default:
@@ -173,7 +170,7 @@ namespace ITI.JsonParser
             char _current = value[start];
             while (_current.ToString().Trim().Length == 0 && MoveNext(value, ref start, ref count, out _current))
             {
-                //Do nothing... just skipping white spaces
+                //Do nothing... just skip white spaces
             }
             return _current;
         }
@@ -197,13 +194,13 @@ namespace ITI.JsonParser
         private static string ReadStringValue(string value, ref int start, ref int count)
         {
             StringBuilder _builder = new StringBuilder();
-            char _previous, _current;
+            char _current, _previous;
             while (MoveNext(value, ref start, ref count, out _current))
             {
                 _previous = value[start - 1];
                 if (_current.Equals('"') && !_previous.Equals('\\'))
                 {
-                    //Go to next delimiter char : ',' or ']' or '}'
+                    //Go to next end delimiter char : ',' or ']' or '}'
                     if (MoveNext(value, ref start, ref count))
                     {
                         SkipSpaces(value, ref start, ref count);
