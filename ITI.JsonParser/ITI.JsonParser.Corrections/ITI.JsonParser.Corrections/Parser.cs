@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,8 @@ namespace ITI.JsonParser
 
         public static object ParseNull(string value, ref int start, ref int count)
         {
-            SkipSpaces(value, ref start, ref count);
+            char _current = SkipSpaces(value, ref start, ref count);
+            Debug.Assert(_current.Equals('n'));
             if (!ReadNonStringValue(value, ref start, ref count).Equals("null"))
             {
                 throw new FormatException();
@@ -26,32 +28,37 @@ namespace ITI.JsonParser
 
         public static bool ParseBoolean(string value, ref int start, ref int count)
         {
-            SkipSpaces(value, ref start, ref count);
+            char _current = SkipSpaces(value, ref start, ref count);
+            Debug.Assert(_current.Equals('t') || _current.Equals('f'));
             return Boolean.Parse(ReadNonStringValue(value, ref start, ref count));
         }
 
         public static double ParseDouble(string value, ref int start, ref int count)
         {
-            SkipSpaces(value, ref start, ref count);
+            char _current = SkipSpaces(value, ref start, ref count);
+            Debug.Assert(_current.Equals('-') || Int32.TryParse(_current.ToString(), out int _result));
             return Double.Parse(ReadNonStringValue(value, ref start, ref count), NumberStyles.Number, _culture);
         }
 
         public static string ParseString(string value, ref int start, ref int count)
         {
-            SkipSpaces(value, ref start, ref count);
+            char _current = SkipSpaces(value, ref start, ref count);
+            Debug.Assert(_current.Equals('"'));
             return Decoder(ReadStringValue(value, ref start, ref count));
         }
 
         public static object[] ParseArray(string value, ref int start, ref int count)
         {
-            List<object> _results = new List<object>();
             char _current = SkipSpaces(value, ref start, ref count);
+            Debug.Assert(_current.Equals('['));
+            List<object> _results = new List<object>();
             while (MoveNext(value, ref start, ref count, out _current))
             {
                 _current = SkipSpaces(value, ref start, ref count);
                 if (!_current.Equals(']'))
                 {
-                    _current = AddItem(value, ref start, ref count, _results);
+                    _results.Add(ParseValue(value, ref start, ref count, _current));
+                    _current = SkipSpaces(value, ref start, ref count);
                 }
 
                 if (_current.Equals(']'))
@@ -67,24 +74,18 @@ namespace ITI.JsonParser
             return _results.ToArray();
         }
 
-        private static char AddItem(string value, ref int start, ref int count, List<object> results)
-        {
-            char _current = SkipSpaces(value, ref start, ref count);
-            results.Add(ParseValue(value, ref start, ref count, _current));
-            _current = SkipSpaces(value, ref start, ref count);
-            return _current;
-        }
-
         public static Dictionary<string, object> ParseObject(string value, ref int start, ref int count)
         {
-            Dictionary<string, object> _results = new Dictionary<string, object>();
             char _current = SkipSpaces(value, ref start, ref count);
+            Debug.Assert(_current.Equals('{'));
+            Dictionary<string, object> _results = new Dictionary<string, object>();
             while (MoveNext(value, ref start, ref count, out _current))
             {
                 _current = SkipSpaces(value, ref start, ref count);
                 if (!_current.Equals('}'))
                 {
-                    _current = AddProperty(value, ref start, ref count, _results);
+                    AddProperty(value, ref start, ref count, _results);
+                    _current = SkipSpaces(value, ref start, ref count);
                 }
 
                 if (_current.Equals('}'))
@@ -100,7 +101,7 @@ namespace ITI.JsonParser
             return _results;
         }
 
-        private static char AddProperty(string value, ref int start, ref int count, Dictionary<string, object> _results)
+        private static void AddProperty(string value, ref int start, ref int count, Dictionary<string, object> _results)
         {
             char _current = SkipSpaces(value, ref start, ref count);
             if (!_current.Equals('"'))
@@ -115,19 +116,16 @@ namespace ITI.JsonParser
             }
 
             _current = SkipSpaces(value, ref start, ref count);
-            if (_current.Equals(':'))
-            {
-                MoveNext(value, ref start, ref count);
-            }
-            else
+            if (!_current.Equals(':'))
             {
                 throw new FormatException();
             }
 
-            _current = SkipSpaces(value, ref start, ref count);
-            _results.Add(_key, ParseValue(value, ref start, ref count, _current));
-            _current = SkipSpaces(value, ref start, ref count);
-            return _current;
+            if (MoveNext(value, ref start, ref count))
+            {
+                _current = SkipSpaces(value, ref start, ref count);
+                _results.Add(_key, ParseValue(value, ref start, ref count, _current));
+            }
         }
 
         private static object ParseValue(string value, ref int start, ref int count, char current)
@@ -158,9 +156,9 @@ namespace ITI.JsonParser
 
         private static bool MoveNext(string value, ref int start, ref int count, out char current)
         {
-            current = value[start];
-            if (count < 1 || start >= value.Length - 1)
+            if (count <= 0 || start >= value.Length - 1)
             {
+                current = start < value.Length ? value[start] : '\0';
                 return false;
             }
 
@@ -173,9 +171,9 @@ namespace ITI.JsonParser
         private static char SkipSpaces(string value, ref int start, ref int count)
         {
             char _current = value[start];
-            while (_current.Equals(' ') && MoveNext(value, ref start, ref count, out _current))
+            while (_current.ToString().Trim().Length == 0 && MoveNext(value, ref start, ref count, out _current))
             {
-                //Do nothing
+                //Do nothing... just skipping white spaces
             }
             return _current;
         }
@@ -190,10 +188,8 @@ namespace ITI.JsonParser
                 {
                     break;
                 }
-                else
-                {
-                    _builder.Append(_current);
-                }
+
+                _builder.Append(_current);
             } while (MoveNext(value, ref start, ref count, out _current));
             return _builder.ToString().Trim();
         }
@@ -207,16 +203,16 @@ namespace ITI.JsonParser
                 _previous = value[start - 1];
                 if (_current.Equals('"') && !_previous.Equals('\\'))
                 {
+                    //Go to next delimiter char : ',' or ']' or '}'
                     if (MoveNext(value, ref start, ref count))
                     {
                         SkipSpaces(value, ref start, ref count);
                     }
+
                     break;
                 }
-                else
-                {
-                    _builder.Append(_current);
-                }
+
+                _builder.Append(_current);
             }
             return _builder.ToString();
         }
