@@ -200,12 +200,7 @@ namespace ITI.JsonParser
                 _previous = value[start - 1];
                 if (_current.Equals('"') && !_previous.Equals('\\'))
                 {
-                    //Go to next end delimiter char : ',' or ']' or '}'
-                    if (MoveNext(value, ref start, ref count))
-                    {
-                        SkipSpaces(value, ref start, ref count);
-                    }
-
+                    MoveNext(value, ref start, ref count);
                     break;
                 }
 
