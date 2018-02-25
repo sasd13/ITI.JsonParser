@@ -14,7 +14,8 @@ namespace ITI.JsonParser
         public static object ParseNull(string value, ref int start, ref int count)
         {
             char _current = SkipSpaces(value, ref start, ref count);
-            if (!_current.Equals('n') || !ReadNonStringValue(value, ref start, ref count).Equals("null"))
+            if (!_current.Equals('n')
+                || !ReadNonStringValue(value, ref start, ref count).Equals("null"))
             {
                 throw new FormatException();
             }
@@ -26,7 +27,8 @@ namespace ITI.JsonParser
         {
             char _current = SkipSpaces(value, ref start, ref count);
             bool _result = false;
-            if ((!_current.Equals('t') && !_current.Equals('f')) || !Boolean.TryParse(ReadNonStringValue(value, ref start, ref count), out _result))
+            if ((!_current.Equals('t') && !_current.Equals('f'))
+                || !Boolean.TryParse(ReadNonStringValue(value, ref start, ref count), out _result))
             {
                 throw new FormatException();
             }
@@ -38,7 +40,8 @@ namespace ITI.JsonParser
         {
             char _current = SkipSpaces(value, ref start, ref count);
             double _result = 0.0D;
-            if ((!_current.Equals('-') && !Int32.TryParse(_current.ToString(), out int _void)) || !Double.TryParse(ReadNonStringValue(value, ref start, ref count), NumberStyles.Number, _culture, out _result))
+            if ((!_current.Equals('-') && !Int32.TryParse(_current.ToString(), out int _void))
+                || !Double.TryParse(ReadNonStringValue(value, ref start, ref count), NumberStyles.Number, _culture, out _result))
             {
                 throw new FormatException();
             }
