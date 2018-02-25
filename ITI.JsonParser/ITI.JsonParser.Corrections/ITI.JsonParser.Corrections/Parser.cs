@@ -183,8 +183,8 @@ namespace ITI.JsonParser
                 return false;
             }
 
-            start += 1;
-            count -= 1;
+            start++;
+            count--;
             current = value[start];
             return true;
         }
@@ -218,11 +218,10 @@ namespace ITI.JsonParser
         private static string ReadStringValue(string value, ref int start, ref int count)
         {
             StringBuilder _builder = new StringBuilder();
-            char _current, _previous;
+            char _current;
             while (MoveNext(value, ref start, ref count, out _current))
             {
-                _previous = value[start - 1];
-                if (_current.Equals('"') && !_previous.Equals('\\'))
+                if (_current.Equals('"') && !value[start - 1].Equals('\\'))
                 {
                     MoveNext(value, ref start, ref count);
                     break;
