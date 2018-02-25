@@ -69,7 +69,7 @@ namespace ITI.JsonParser
             }
 
             List<object> _results = new List<object>();
-            while (MoveNext(value, ref start, ref count, out _current))
+            while (MoveNext(value, ref start, ref count))
             {
                 _current = SkipSpaces(value, ref start, ref count);
                 if (!_current.Equals(']'))
@@ -100,7 +100,7 @@ namespace ITI.JsonParser
             }
 
             Dictionary<string, object> _results = new Dictionary<string, object>();
-            while (MoveNext(value, ref start, ref count, out _current))
+            while (MoveNext(value, ref start, ref count))
             {
                 _current = SkipSpaces(value, ref start, ref count);
                 if (!_current.Equals('}'))
