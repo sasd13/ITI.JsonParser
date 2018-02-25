@@ -85,7 +85,7 @@ namespace ITI.JsonParser.Tests
         }
 
         [TestCase(@"""To be\u002C \u006Fr n\u006Ft t\u006F be""")]
-        public void test43_parse_string_with_hexadecimals(string value)
+        public void test42_parse_string_with_hexadecimals(string value)
         {
             int start = 0;
             int count = value.Length;
@@ -93,7 +93,7 @@ namespace ITI.JsonParser.Tests
         }
 
         [TestCase(@"""William Shakespeare : \""To be, or not to be\""""")]
-        public void test44_parse_escaped_string(string value)
+        public void test43_parse_escaped_string(string value)
         {
             int start = 0;
             int count = value.Length;
