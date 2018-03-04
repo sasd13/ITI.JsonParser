@@ -20,22 +20,22 @@ namespace ITI.JsonParser
             throw new NotImplementedException();
         }
 
-        public static double ParseDouble( string value, ref int start, ref int count )
+        public static double ParseDouble(string value, ref int start, ref int count)
         {
             throw new NotImplementedException();
         }
 
-        public static string ParseString( string value, ref int start, ref int count )
+        public static string ParseString(string value, ref int start, ref int count)
         {
             throw new NotImplementedException();
         }
 
-        public static object[] ParseArray( string value, ref int start, ref int count )
+        public static object[] ParseArray(string value, ref int start, ref int count)
         {
             throw new NotImplementedException();
         }
 
-        public static Dictionary<string, object> ParseObject( string value, ref int start, ref int count )
+        public static Dictionary<string, object> ParseObject(string value, ref int start, ref int count)
         {
             throw new NotImplementedException();
         }
