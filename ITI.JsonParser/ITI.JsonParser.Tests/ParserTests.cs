@@ -43,28 +43,28 @@ namespace ITI.JsonParser.Tests
             action.Should().Throw<FormatException>();
         }
 
-        [TestCase(@"12.99")]
+        [TestCase(@"0")]
         public void test30_parse_double(string value)
         {
             int start = 0;
             int count = value.Length;
-            Parser.ParseDouble(value, ref start, ref count).Should().Be(12.99d);
+            Parser.ParseInt(value, ref start, ref count).Should().Be(0);
         }
 
-        [TestCase(@"-12.99")]
+        [TestCase(@"-100")]
         public void test31_parse_negative_double(string value)
         {
             int start = 0;
             int count = value.Length;
-            Parser.ParseDouble(value, ref start, ref count).Should().Be(-12.99d);
+            Parser.ParseInt(value, ref start, ref count).Should().Be(-100);
         }
 
-        [TestCase(@"-12.k9")]
+        [TestCase(@"-12.99")]
         public void test32_parse_invalid_double(string value)
         {
             int start = 0;
             int count = value.Length;
-            Action action = () => Parser.ParseDouble(value, ref start, ref count);
+            Action action = () => Parser.ParseInt(value, ref start, ref count);
             action.Should().Throw<FormatException>();
         }
 

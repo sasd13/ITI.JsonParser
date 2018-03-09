@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace ITI.JsonParser
 {
-
     public static class Parser
     {
-
         public static object ParseNull(string value, ref int start, ref int count)
         {
             throw new NotImplementedException();
@@ -20,7 +18,7 @@ namespace ITI.JsonParser
             throw new NotImplementedException();
         }
 
-        public static double ParseDouble(string value, ref int start, ref int count)
+        public static int ParseInt(string value, ref int start, ref int count)
         {
             throw new NotImplementedException();
         }
@@ -36,6 +34,31 @@ namespace ITI.JsonParser
         }
 
         public static Dictionary<string, object> ParseObject(string value, ref int start, ref int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static bool ReadNextChar(string value, ref int start, ref int count, out char current)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static bool ReadNonBlankChar(string value, ref int start, ref int count, out char current)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static string ReadNonStringValue(string value, ref int start, ref int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static string ReadStringValue(string value, ref int start, ref int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static object ParseValue(string value, ref int start, ref int count, char current)
         {
             throw new NotImplementedException();
         }
