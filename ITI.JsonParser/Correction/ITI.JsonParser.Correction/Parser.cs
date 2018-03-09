@@ -12,7 +12,7 @@ namespace ITI.JsonParser
 
         public static object ParseNull(string value, ref int start, ref int count)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if (!_current.Equals('n')
                 || !ReadNonStringValue(value, ref start, ref count).Equals("null"))
             {
@@ -24,7 +24,7 @@ namespace ITI.JsonParser
 
         public static bool ParseBoolean(string value, ref int start, ref int count)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if ((!_current.Equals('t') && !_current.Equals('f'))
                 || !Boolean.TryParse(ReadNonStringValue(value, ref start, ref count), out bool _result))
             {
@@ -36,7 +36,7 @@ namespace ITI.JsonParser
 
         public static int ParseInt(string value, ref int start, ref int count)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if ((!_current.Equals('-') && !Int32.TryParse(_current.ToString(), out int _void))
                 || !Int32.TryParse(ReadNonStringValue(value, ref start, ref count), out int _result))
             {
@@ -48,7 +48,7 @@ namespace ITI.JsonParser
 
         public static string ParseString(string value, ref int start, ref int count)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if (!_current.Equals('"'))
             {
                 throw new FormatException();
@@ -59,7 +59,7 @@ namespace ITI.JsonParser
 
         public static object[] ParseArray(string value, ref int start, ref int count)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if (!_current.Equals('['))
             {
                 throw new FormatException();
@@ -68,13 +68,13 @@ namespace ITI.JsonParser
             List<object> _results = new List<object>();
             while (MoveNext(value, ref start, ref count))
             {
-                ReadNonBlankChar(value, ref start, ref count, out _current);
+                TryReadNonBlankChar(value, ref start, ref count, out _current);
                 if (!_current.Equals(']'))
                 {
                     _results.Add(ParseValue(value, ref start, ref count, _current));
                 }
 
-                ReadNonBlankChar(value, ref start, ref count, out _current);
+                TryReadNonBlankChar(value, ref start, ref count, out _current);
                 if (_current.Equals(']'))
                 {
                     MoveNext(value, ref start, ref count);
@@ -85,12 +85,13 @@ namespace ITI.JsonParser
                     throw new FormatException();
                 }
             }
+
             return _results.ToArray();
         }
 
         public static Dictionary<string, object> ParseObject(string value, ref int start, ref int count)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if (!_current.Equals('{'))
             {
                 throw new FormatException();
@@ -99,13 +100,13 @@ namespace ITI.JsonParser
             Dictionary<string, object> _results = new Dictionary<string, object>();
             while (MoveNext(value, ref start, ref count))
             {
-                ReadNonBlankChar(value, ref start, ref count, out _current);
+                TryReadNonBlankChar(value, ref start, ref count, out _current);
                 if (!_current.Equals('}'))
                 {
                     AddProperty(value, ref start, ref count, _results);
                 }
 
-                ReadNonBlankChar(value, ref start, ref count, out _current);
+                TryReadNonBlankChar(value, ref start, ref count, out _current);
                 if (_current.Equals('}'))
                 {
                     MoveNext(value, ref start, ref count);
@@ -116,10 +117,11 @@ namespace ITI.JsonParser
                     throw new FormatException();
                 }
             }
+
             return _results;
         }
 
-        private static bool ReadNextChar(string value, ref int start, ref int count, out char current)
+        private static bool TryReadNextChar(string value, ref int start, ref int count, out char current)
         {
             if (count <= 0 || start >= value.Length - 1)
             {
@@ -130,18 +132,20 @@ namespace ITI.JsonParser
             start++;
             count--;
             current = value[start];
+
             return true;
         }
 
-        private static bool ReadNonBlankChar(string value, ref int start, ref int count, out char current)
+        private static bool TryReadNonBlankChar(string value, ref int start, ref int count, out char current)
         {
-            bool _hasMoved = false;
+            bool _hasRead = false;
             current = value[start];
-            while (current.ToString().Trim().Length == 0 && ReadNextChar(value, ref start, ref count, out current))
+            while (current.ToString().Trim().Length == 0 && TryReadNextChar(value, ref start, ref count, out current))
             {
-                _hasMoved = true;
+                _hasRead = true;
             }
-            return _hasMoved;
+
+            return _hasRead;
         }
 
         private static string ReadNonStringValue(string value, ref int start, ref int count)
@@ -156,7 +160,8 @@ namespace ITI.JsonParser
                 }
 
                 _builder.Append(_current);
-            } while (ReadNextChar(value, ref start, ref count, out _current));
+            } while (TryReadNextChar(value, ref start, ref count, out _current));
+
             return _builder.ToString().Trim();
         }
 
@@ -164,7 +169,7 @@ namespace ITI.JsonParser
         {
             StringBuilder _builder = new StringBuilder();
             char _current;
-            while (ReadNextChar(value, ref start, ref count, out _current))
+            while (TryReadNextChar(value, ref start, ref count, out _current))
             {
                 if (_current.Equals('"') && !value[start - 1].Equals('\\'))
                 {
@@ -174,6 +179,7 @@ namespace ITI.JsonParser
 
                 _builder.Append(_current);
             }
+
             return _builder.ToString();
         }
 
@@ -200,7 +206,7 @@ namespace ITI.JsonParser
 
         private static bool MoveNext(string value, ref int start, ref int count)
         {
-            return ReadNextChar(value, ref start, ref count, out char _void);
+            return TryReadNextChar(value, ref start, ref count, out char _void);
         }
 
         private static string Decoder(string value)
@@ -213,7 +219,7 @@ namespace ITI.JsonParser
 
         private static void AddProperty(string value, ref int start, ref int count, Dictionary<string, object> _results)
         {
-            ReadNonBlankChar(value, ref start, ref count, out char _current);
+            TryReadNonBlankChar(value, ref start, ref count, out char _current);
             if (!_current.Equals('"'))
             {
                 throw new FormatException();
@@ -225,7 +231,7 @@ namespace ITI.JsonParser
                 throw new InvalidOperationException();
             }
 
-            ReadNonBlankChar(value, ref start, ref count, out _current);
+            TryReadNonBlankChar(value, ref start, ref count, out _current);
             if (!_current.Equals(':'))
             {
                 throw new FormatException();
@@ -233,7 +239,7 @@ namespace ITI.JsonParser
 
             if (MoveNext(value, ref start, ref count))
             {
-                ReadNonBlankChar(value, ref start, ref count, out _current);
+                TryReadNonBlankChar(value, ref start, ref count, out _current);
                 _results.Add(_key, ParseValue(value, ref start, ref count, _current));
             }
         }

@@ -38,12 +38,12 @@ namespace ITI.JsonParser
             throw new NotImplementedException();
         }
 
-        private static bool ReadNextChar(string value, ref int start, ref int count, out char current)
+        private static bool TryReadNextChar(string value, ref int start, ref int count, out char current)
         {
             throw new NotImplementedException();
         }
 
-        private static bool ReadNonBlankChar(string value, ref int start, ref int count, out char current)
+        private static bool TryReadNonBlankChar(string value, ref int start, ref int count, out char current)
         {
             throw new NotImplementedException();
         }
